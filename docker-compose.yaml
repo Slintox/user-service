@@ -1,0 +1,29 @@
+version: '3'
+
+volumes:
+  postgres_db:
+
+services:
+  #  Used on windows with a specific volume path
+  db:
+    image: postgres:14-alpine3.17
+    environment:
+      - "POSTGRES_DB=${PG_DATABASE}"
+      - "POSTGRES_USER=${PG_USER}"
+      - "POSTGRES_PASSWORD=${PG_PASSWORD}"
+    ports:
+      - "${PG_PORT}:5432"
+    volumes:
+      - H:/Volumes/user-grpc-postgres:/var/lib/postgresql/data
+
+#  Used on linux
+#  db_on_linux:
+#    image: postgres:14-alpine3.17
+#    environment:
+#      - "POSTGRES_DB=${PG_DATABASE}"
+#      - "POSTGRES_USER=${PG_USER}"
+#      - "POSTGRES_PASSWORD=${PG_PASSWORD}"
+#    ports:
+#      - "${PG_PORT}:5432"
+#    volumes:
+#      - postgres_db:/var/lib/postgresql/data
