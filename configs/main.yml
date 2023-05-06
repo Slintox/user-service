@@ -1,0 +1,2 @@
+grpc_port: ":50052"
+postgres_dsn: "host=localhost port=54322 dbname=user user=user-user password=user-password sslmode=disable"

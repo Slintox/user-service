@@ -31,11 +31,11 @@ message User {
   google.protobuf.Timestamp updated_at = 6;
 }
 
-message UpdateUser {
-  optional string update_username = 1;
-  optional string update_email = 2;
-  optional string update_password = 3;
-  optional UserRole update_role = 4;
+message UpdateUserFields {
+  optional string username = 1;
+  optional string email = 2;
+  optional string password = 3;
+  optional UserRole role = 4;
 }
 
 // Responses \ Requests
@@ -58,7 +58,7 @@ message GetResponse {
 
 message UpdateRequest {
   string username = 1;
-  UpdateUser user = 2;
+  UpdateUserFields update_data = 2;
 }
 
 message DeleteRequest {
