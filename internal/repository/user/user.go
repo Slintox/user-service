@@ -67,6 +67,7 @@ func (r *repository) Get(ctx context.Context, username string) (*model.User, err
 	builder := sq.Select("username", "email", "password", "role", "created_at", "updated_at").
 		From(tableName).
 		Where(sq.Eq{"username": username}).
+		Limit(1).
 		PlaceholderFormat(sq.Dollar)
 
 	query, v, err := builder.ToSql()
@@ -130,7 +131,7 @@ func (r *repository) Update(ctx context.Context, username string, updateData *mo
 
 func (r *repository) Delete(ctx context.Context, username string) error {
 	builder := sq.Delete(tableName).
-		Where("username = $1", username).
+		Where(sq.Eq{"username": username}).
 		PlaceholderFormat(sq.Dollar)
 
 	query, v, err := builder.ToSql()
