@@ -6,6 +6,7 @@ import (
 	"log"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/Slintox/user-service/config"
 	"github.com/Slintox/user-service/internal/model"
 	repo "github.com/Slintox/user-service/internal/repository"
 	"github.com/jackc/pgx/v4"
@@ -53,7 +54,9 @@ func (r *repository) Add(ctx context.Context, user *model.CreateUser) error {
 		return err
 	}
 
-	log.Printf("user.Update: query: '%s' values: '%+v'\n", query, v)
+	if config.PostgresDev {
+		log.Printf("user.Update: query: '%s' values: '%+v'\n", query, v)
+	}
 
 	_, err = r.pool.Exec(ctx, query, v...)
 	if err != nil {
@@ -75,7 +78,9 @@ func (r *repository) Get(ctx context.Context, username string) (*model.User, err
 		return nil, err
 	}
 
-	log.Printf("user.Get: query: '%s' values: '%+v'\n", query, v)
+	if config.PostgresDev {
+		log.Printf("user.Get: query: '%s' values: '%+v'\n", query, v)
+	}
 
 	rows := r.pool.QueryRow(ctx, query, v...)
 	if err != nil {
@@ -84,6 +89,9 @@ func (r *repository) Get(ctx context.Context, username string) (*model.User, err
 
 	var user model.User
 	if err = rows.Scan(&user.Username, &user.Email, &user.Password, &user.Role, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, repo.ErrRecordNotFound
+		}
 		return nil, err
 	}
 
@@ -115,7 +123,9 @@ func (r *repository) Update(ctx context.Context, username string, updateData *mo
 		return err
 	}
 
-	log.Printf("user.Update: query: '%s' values: '%+v'\n", query, v)
+	if config.PostgresDev {
+		log.Printf("user.Update: query: '%s' values: '%+v'\n", query, v)
+	}
 
 	pg, err := r.pool.Exec(ctx, query, v...)
 	if err != nil {
@@ -139,7 +149,9 @@ func (r *repository) Delete(ctx context.Context, username string) error {
 		return err
 	}
 
-	log.Printf("user.Delete: query: '%s' values: '%+v'\n", query, v)
+	if config.PostgresDev {
+		log.Printf("user.Delete: query: '%s' values: '%+v'\n", query, v)
+	}
 
 	_, err = r.pool.Exec(ctx, query, v...)
 	if err != nil {
@@ -160,7 +172,9 @@ func (r *repository) IsUsernameAvailable(ctx context.Context, username string) (
 		return false, err
 	}
 
-	log.Printf("user.IsUsernameAvailable: query: '%s' values: '%+v'\n", query, v)
+	if config.PostgresDev {
+		log.Printf("user.IsUsernameAvailable: query: '%s' values: '%+v'\n", query, v)
+	}
 
 	var count int
 	row := r.pool.QueryRow(ctx, query, v...)

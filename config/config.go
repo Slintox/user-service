@@ -2,6 +2,11 @@ package config
 
 import "github.com/ilyakaznacheev/cleanenv"
 
+// Костыль
+const (
+	PostgresDev = true
+)
+
 type (
 	Config struct {
 		GRPC     *GRPCServerConfig
