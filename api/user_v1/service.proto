@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package user_v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/Slintox/user-service/pkg/user_v1;user_v1";
+
+service UserV1 {
+  rpc Create(CreateRequest) returns (google.protobuf.Empty);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Update(UpdateRequest) returns (google.protobuf.Empty);
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+}
+
+// Models
+
+enum UserRole {
+  UNDEFINED = 0;
+  USER = 1;
+  ADMIN = 2;
+}
+
+message User {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+  UserRole role = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message UpdateUserFields {
+  optional string username = 1;
+  optional string email = 2;
+  optional string password = 3;
+  optional UserRole role = 4;
+}
+
+// Responses \ Requests
+
+message CreateRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+  string confirm_password = 4;
+  UserRole role = 5;
+}
+
+message GetRequest {
+  string username = 1;
+}
+
+message GetResponse {
+  User user = 1;
+}
+
+message UpdateRequest {
+  string username = 1;
+  UpdateUserFields update_data = 2;
+}
+
+message DeleteRequest {
+  string username = 1;
+}
