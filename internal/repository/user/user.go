@@ -84,6 +84,9 @@ func (r *repository) Get(ctx context.Context, username string) (*model.User, err
 
 	var user model.User
 	if err = rows.Scan(&user.Username, &user.Email, &user.Password, &user.Role, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, repo.ErrRecordNotFound
+		}
 		return nil, err
 	}
 

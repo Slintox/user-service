@@ -55,6 +55,9 @@ func (s *service) Create(ctx context.Context, user *model.CreateUser) error {
 func (s *service) Get(ctx context.Context, username string) (*model.User, error) {
 	user, err := s.userRepo.Get(ctx, username)
 	if err != nil {
+		if errors.Is(err, repo.ErrRecordNotFound) {
+			return nil, errUserNotFound
+		}
 		return nil, err
 	}
 
