@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"github.com/Slintox/user-service/pkg/common/closer"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
 
 	"github.com/Slintox/user-service/config"
@@ -9,7 +11,6 @@ import (
 	userRepo "github.com/Slintox/user-service/internal/repository/user"
 	userService "github.com/Slintox/user-service/internal/service/user"
 	"github.com/Slintox/user-service/pkg/database/postgres"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type ServiceProvider interface {
@@ -18,8 +19,8 @@ type ServiceProvider interface {
 type serviceProvider struct {
 	configPath string
 
-	config *config.Config
-	pgConn *pgxpool.Pool
+	config   *config.Config
+	pgClient postgres.Client
 
 	userRepo    userRepo.Repository
 	userService userService.Service
@@ -48,19 +49,29 @@ func (s *serviceProvider) GetConfig() *config.Config {
 	return s.config
 }
 
-func (s *serviceProvider) GetPostgresClient(ctx context.Context) *pgxpool.Pool {
-	if s.pgConn != nil {
-		return s.pgConn
+func (s *serviceProvider) GetPostgresClient(ctx context.Context) postgres.Client {
+	if s.pgClient != nil {
+		return s.pgClient
 	}
 
-	conn, err := postgres.Connect(ctx, s.GetConfig().GetPostgresConfig())
+	pgCfg, err := pgxpool.ParseConfig(s.GetConfig().GetPostgresConfig().DSN)
 	if err != nil {
-		log.Fatalf("falied to connect to postgres db: %s", err.Error())
-		return nil
+		log.Fatalf("failed to get db config: %s", err.Error())
 	}
 
-	s.pgConn = conn
-	return s.pgConn
+	client, err := postgres.NewClient(ctx, pgCfg)
+	if err != nil {
+		log.Fatalf("failed to get postgres client: %s", err.Error())
+	}
+
+	err = client.Postgres().Ping(ctx)
+	if err != nil {
+		log.Fatalf("ping error: %s", err.Error())
+	}
+	closer.Add(client.Close)
+
+	s.pgClient = client
+	return s.pgClient
 }
 
 func (s *serviceProvider) GetUserRepository(ctx context.Context) userRepo.Repository {

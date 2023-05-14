@@ -3,14 +3,14 @@ package user
 import (
 	"context"
 	"errors"
+	"github.com/Slintox/user-service/pkg/database/postgres"
+	"github.com/jackc/pgx/v4"
 	"log"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Slintox/user-service/config"
 	"github.com/Slintox/user-service/internal/model"
 	repo "github.com/Slintox/user-service/internal/repository"
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const tableName = `"user"`
@@ -24,19 +24,24 @@ type Repository interface {
 }
 
 type repository struct {
-	pool *pgxpool.Pool
+	client postgres.Client
 }
 
-func NewRepository(pool *pgxpool.Pool) Repository {
+func NewRepository(client postgres.Client) Repository {
 	return &repository{
-		pool: pool,
+		client: client,
 	}
 }
 
 func (r *repository) Add(ctx context.Context, user *model.CreateUser) error {
 	var roleId int
 
-	row := r.pool.QueryRow(ctx, "select id from user_role where id = $1", user.Role)
+	roleQ := postgres.Query{
+		Name:     "userRole.Get",
+		QueryRaw: "select id from user_role where id = $1",
+	}
+
+	row := r.client.Postgres().QueryRow(ctx, roleQ, user.Role)
 	if err := row.Scan(&roleId); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return repo.ErrRecordNotFound
@@ -58,7 +63,12 @@ func (r *repository) Add(ctx context.Context, user *model.CreateUser) error {
 		log.Printf("user.Update: query: '%s' values: '%+v'\n", query, v)
 	}
 
-	_, err = r.pool.Exec(ctx, query, v...)
+	q := postgres.Query{
+		Name:     "user.Add",
+		QueryRaw: query,
+	}
+
+	_, err = r.client.Postgres().Exec(ctx, q, v...)
 	if err != nil {
 		return err
 	}
@@ -82,13 +92,13 @@ func (r *repository) Get(ctx context.Context, username string) (*model.User, err
 		log.Printf("user.Get: query: '%s' values: '%+v'\n", query, v)
 	}
 
-	rows := r.pool.QueryRow(ctx, query, v...)
-	if err != nil {
-		return nil, err
+	q := postgres.Query{
+		Name:     "user.Get",
+		QueryRaw: query,
 	}
 
 	var user model.User
-	if err = rows.Scan(&user.Username, &user.Email, &user.Password, &user.Role, &user.CreatedAt, &user.UpdatedAt); err != nil {
+	if err = r.client.Postgres().Get(ctx, &user, q, v...); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, repo.ErrRecordNotFound
 		}
@@ -127,7 +137,12 @@ func (r *repository) Update(ctx context.Context, username string, updateData *mo
 		log.Printf("user.Update: query: '%s' values: '%+v'\n", query, v)
 	}
 
-	pg, err := r.pool.Exec(ctx, query, v...)
+	q := postgres.Query{
+		Name:     "user.Update",
+		QueryRaw: query,
+	}
+
+	pg, err := r.client.Postgres().Exec(ctx, q, v...)
 	if err != nil {
 		return err
 	}
@@ -153,7 +168,12 @@ func (r *repository) Delete(ctx context.Context, username string) error {
 		log.Printf("user.Delete: query: '%s' values: '%+v'\n", query, v)
 	}
 
-	_, err = r.pool.Exec(ctx, query, v...)
+	q := postgres.Query{
+		Name:     "user.Delete",
+		QueryRaw: query,
+	}
+
+	_, err = r.client.Postgres().Exec(ctx, q, v...)
 	if err != nil {
 		return err
 	}
@@ -176,8 +196,13 @@ func (r *repository) IsUsernameAvailable(ctx context.Context, username string) (
 		log.Printf("user.IsUsernameAvailable: query: '%s' values: '%+v'\n", query, v)
 	}
 
+	q := postgres.Query{
+		Name:     "user.IsUsernameAvailable",
+		QueryRaw: query,
+	}
+
 	var count int
-	row := r.pool.QueryRow(ctx, query, v...)
+	row := r.client.Postgres().QueryRow(ctx, q, v...)
 	if err = row.Scan(&count); err != nil {
 		log.Printf("user.IsUnameAvl: %s", err.Error())
 		return false, err

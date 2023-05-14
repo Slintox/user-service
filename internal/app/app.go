@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/Slintox/user-service/internal/api/user"
 	"github.com/Slintox/user-service/pkg/common/closer"
 	userV1 "github.com/Slintox/user-service/pkg/user_v1"
 )
@@ -16,7 +15,6 @@ import (
 type App struct {
 	configPath string
 
-	userImpl        *user.Implementation
 	serviceProvider *serviceProvider
 
 	grpcServer *grpc.Server
