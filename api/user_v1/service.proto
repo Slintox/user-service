@@ -8,59 +8,86 @@ import "google/protobuf/empty.proto";
 option go_package = "github.com/Slintox/user-service/pkg/user_v1;user_v1";
 
 service UserV1 {
+  // Создаёт нового пользователя
   rpc Create(CreateRequest) returns (google.protobuf.Empty);
+  // Возвращает существующего пользователя
   rpc Get(GetRequest) returns (GetResponse);
+  // Обновляет указанные поля пользователя
   rpc Update(UpdateRequest) returns (google.protobuf.Empty);
+  // Удаляет указанного пользователя
   rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
 }
 
 // Models
 
+// Роли пользователя
 enum UserRole {
   UNDEFINED = 0;
+  // Обычный пользователь
   USER = 1;
+  // Пользователь администратор
   ADMIN = 2;
 }
 
 message User {
+  // Имя пользователя
   string username = 1;
+  // Почта пользователя
   string email = 2;
-  string password = 3;
+  // Удалённое поле "пароль".
+  reserved 3;
+  // Роль пользователя
   UserRole role = 4;
+  // Время создания пользователя
   google.protobuf.Timestamp created_at = 5;
+  // Время последнего обновления пользователя
   google.protobuf.Timestamp updated_at = 6;
 }
 
 message UpdateUserFields {
+  // Новое имя пользователя
   optional string username = 1;
+  // Новая почта пользователя
   optional string email = 2;
+  // Новый пароль
   optional string password = 3;
+  // Новая роль пользователя
   optional UserRole role = 4;
 }
 
 // Responses \ Requests
 
 message CreateRequest {
+  // Имя пользователя
   string username = 1;
+  // Почта пользователя
   string email = 2;
+  // Пароль пользователя
   string password = 3;
+  // Подтверждение пароля пользователя
   string confirm_password = 4;
+  // Установка роли пользователя
   UserRole role = 5;
 }
 
 message GetRequest {
+  // Имя пользователя (уникальное значение, pk)
   string username = 1;
 }
 
 message GetResponse {
+  // Данные пользователя
   User user = 1;
 }
 
 message UpdateRequest {
+  // Имя пользователя (уникальное значение, pk)
   string username = 1;
+  // Поля для обновления
   UpdateUserFields update_data = 2;
 }
 
 message DeleteRequest {
+  // Имя пользователя (уникальное значение, pk)
   string username = 1;
 }
