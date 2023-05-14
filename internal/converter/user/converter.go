@@ -12,7 +12,6 @@ func FromUserDesc(user *model.User) *desc.User {
 	return &desc.User{
 		Username:  user.Username,
 		Email:     user.Email,
-		Password:  user.Password,
 		Role:      desc.UserRole(user.Role),
 		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: timestamppb.New(user.UpdatedAt),
