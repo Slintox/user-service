@@ -80,6 +80,7 @@ func (r *repository) Get(ctx context.Context, username string) (*model.User, err
 	builder := sq.Select("username", "email", "password", "role", "created_at", "updated_at").
 		From(tableName).
 		Where(sq.Eq{"username": username}).
+		Where("deleted_at is null").
 		Limit(1).
 		PlaceholderFormat(sq.Dollar)
 
@@ -111,6 +112,7 @@ func (r *repository) Get(ctx context.Context, username string) (*model.User, err
 func (r *repository) Update(ctx context.Context, username string, updateData *model.UpdateUser) error {
 	updateQuery := sq.Update(tableName).
 		Where(sq.Eq{"username": username}).
+		Where("deleted_at is null").
 		PlaceholderFormat(sq.Dollar)
 
 	if updateData.Username != nil {
@@ -155,8 +157,9 @@ func (r *repository) Update(ctx context.Context, username string, updateData *mo
 }
 
 func (r *repository) Delete(ctx context.Context, username string) error {
-	builder := sq.Delete(tableName).
+	builder := sq.Update(tableName).
 		Where(sq.Eq{"username": username}).
+		Set("deleted_at", "now()").
 		PlaceholderFormat(sq.Dollar)
 
 	query, v, err := builder.ToSql()
