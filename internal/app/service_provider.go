@@ -14,6 +14,12 @@ import (
 )
 
 type ServiceProvider interface {
+	GetConfig() *config.Config
+	GetPostgresClient(ctx context.Context) postgres.Client
+
+	GetUserRepository(ctx context.Context) userRepo.Repository
+	GetUserService(ctx context.Context) userService.Service
+	GetUserImpl(ctx context.Context) *userImpl.Implementation
 }
 
 type serviceProvider struct {

@@ -15,7 +15,7 @@ import (
 type App struct {
 	configPath string
 
-	serviceProvider *serviceProvider
+	serviceProvider ServiceProvider
 
 	grpcServer *grpc.Server
 }
