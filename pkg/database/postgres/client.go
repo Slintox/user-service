@@ -33,7 +33,7 @@ func (c *client) Postgres() Postgres {
 }
 
 func (c *client) Close() error {
-	if &c.pg != nil {
+	if c.pg != nil {
 		return c.pg.Close()
 	}
 
