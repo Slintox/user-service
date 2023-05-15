@@ -9,6 +9,13 @@ import (
 	uRepo "github.com/Slintox/user-service/internal/repository/user"
 )
 
+type Service interface {
+	Create(ctx context.Context, user *model.CreateUser) error
+	Get(ctx context.Context, username string) (*model.User, error)
+	Update(ctx context.Context, username string, updateData *model.UpdateUser) error
+	Delete(ctx context.Context, username string) error
+}
+
 type service struct {
 	userRepo uRepo.Repository
 }
@@ -17,13 +24,6 @@ func NewService(userRepo uRepo.Repository) Service {
 	return &service{
 		userRepo: userRepo,
 	}
-}
-
-type Service interface {
-	Create(ctx context.Context, user *model.CreateUser) error
-	Get(ctx context.Context, username string) (*model.User, error)
-	Update(ctx context.Context, username string, updateData *model.UpdateUser) error
-	Delete(ctx context.Context, username string) error
 }
 
 func (s *service) Create(ctx context.Context, user *model.CreateUser) error {

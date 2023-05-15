@@ -54,3 +54,11 @@ func InitConfig(configPath string) (*Config, error) {
 
 	return &cfg, nil
 }
+
+func (c *Config) GetPostgresConfig() *PostgresConfig {
+	return c.Postgres
+}
+
+func (c *Config) GetGRPCConfig() *GRPCServerConfig {
+	return c.GRPC
+}
