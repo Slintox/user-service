@@ -33,25 +33,11 @@ func NewRepository(client postgres.Client) Repository {
 	}
 }
 
+// Add adds a new user.
 func (r *repository) Add(ctx context.Context, user *model.CreateUser) error {
-	var roleId int
-
-	roleQ := postgres.Query{
-		Name:     "userRole.Get",
-		QueryRaw: "select id from user_role where id = $1",
-	}
-
-	row := r.client.Postgres().QueryRow(ctx, roleQ, user.Role)
-	if err := row.Scan(&roleId); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return repo.ErrRecordNotFound
-		}
-		return err
-	}
-
 	builder := sq.Insert(tableName).
 		Columns("username", "email", "password", "role").
-		Values(user.Username, user.Email, user.Password, user.Role).
+		Values(user.Username, user.Email, user.Password, user.RoleID).
 		PlaceholderFormat(sq.Dollar)
 
 	query, v, err := builder.ToSql()
@@ -76,6 +62,7 @@ func (r *repository) Add(ctx context.Context, user *model.CreateUser) error {
 	return nil
 }
 
+// Get returns a user by username.
 func (r *repository) Get(ctx context.Context, username string) (*model.User, error) {
 	builder := sq.Select("username", "email", "password", "role", "created_at", "updated_at").
 		From(tableName).
@@ -109,6 +96,7 @@ func (r *repository) Get(ctx context.Context, username string) (*model.User, err
 	return &user, nil
 }
 
+// Update updates the user's selected fields.
 func (r *repository) Update(ctx context.Context, username string, updateData *model.UpdateUser) error {
 	updateQuery := sq.Update(tableName).
 		Where(sq.Eq{"username": username}).
@@ -124,8 +112,8 @@ func (r *repository) Update(ctx context.Context, username string, updateData *mo
 	if updateData.Email != nil {
 		updateQuery = updateQuery.Set("email", updateData.Email)
 	}
-	if updateData.Role != nil {
-		updateQuery = updateQuery.Set("role", updateData.Role)
+	if updateData.RoleID != nil {
+		updateQuery = updateQuery.Set("role", updateData.RoleID)
 	}
 
 	updateQuery = updateQuery.Set("updated_at", "now()")
@@ -156,6 +144,7 @@ func (r *repository) Update(ctx context.Context, username string, updateData *mo
 	return nil
 }
 
+// Delete marks user as deleted.
 func (r *repository) Delete(ctx context.Context, username string) error {
 	builder := sq.Update(tableName).
 		Where(sq.Eq{"username": username}).
@@ -184,6 +173,7 @@ func (r *repository) Delete(ctx context.Context, username string) error {
 	return nil
 }
 
+// IsUsernameAvailable checks if username is available.
 func (r *repository) IsUsernameAvailable(ctx context.Context, username string) (bool, error) {
 	builder := sq.Select("count(*)").
 		From(tableName).

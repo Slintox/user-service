@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	userRole "github.com/Slintox/user-service/internal/repository/user_role"
 
 	"github.com/Slintox/user-service/internal/model"
 	repo "github.com/Slintox/user-service/internal/repository"
@@ -17,7 +18,8 @@ type Service interface {
 }
 
 type service struct {
-	userRepo uRepo.Repository
+	userRepo     uRepo.Repository
+	userRoleRepo userRole.Repository
 }
 
 func NewService(userRepo uRepo.Repository) Service {
@@ -39,6 +41,12 @@ func (s *service) Create(ctx context.Context, user *model.CreateUser) error {
 	}
 	if !isUsernameAvailable {
 		return errUsernameIsAlreadyUsed
+	}
+
+	// Проверка на существование роли
+	isRoleExist, err := s.userRoleRepo.IsRoleExist(ctx, user.RoleID)
+	if !isRoleExist {
+		return errInvalidUserRole
 	}
 
 	// Сохранение нового пользователя

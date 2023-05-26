@@ -12,7 +12,7 @@ func FromUserDesc(user *model.User) *desc.User {
 	return &desc.User{
 		Username:  user.Username,
 		Email:     user.Email,
-		Role:      desc.UserRole(user.Role),
+		RoleId:    desc.UserRoleID(user.RoleID),
 		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: timestamppb.New(user.UpdatedAt),
 	}
@@ -25,7 +25,7 @@ func ToCreateUserDesc(user *desc.CreateRequest) *model.CreateUser {
 		Email:           user.GetEmail(),
 		Password:        user.GetPassword(),
 		ConfirmPassword: user.GetConfirmPassword(),
-		Role:            model.UserRole(user.GetRole()),
+		RoleID:          int(user.GetRoleId()),
 	}
 }
 
@@ -38,8 +38,8 @@ func ToUpdateUserDesc(updateUserFields *desc.UpdateUserFields) *model.UpdateUser
 	}
 
 	if updateUserFields.Role != nil {
-		updUser.Role = new(model.UserRole)
-		*updUser.Role = model.UserRole(*updateUserFields.Role)
+		updUser.RoleID = new(int)
+		*updUser.RoleID = int(*updateUserFields.Role)
 	}
 
 	return updUser
