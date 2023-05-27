@@ -69,7 +69,7 @@ func InitConfig(configPath string) (*Config, error) {
 	}
 
 	if err = cleanenv.ReadEnv(cfg.Swagger); err != nil {
-
+		return nil, err
 	}
 
 	return &cfg, nil

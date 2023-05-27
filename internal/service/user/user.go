@@ -45,7 +45,9 @@ func (s *service) Create(ctx context.Context, user *model.CreateUser) error {
 
 	// Проверка на существование роли
 	isRoleExist, err := s.userRoleRepo.IsRoleExist(ctx, user.RoleID)
-	if !isRoleExist {
+	if err != nil {
+		return err
+	} else if !isRoleExist {
 		return errInvalidUserRole
 	}
 

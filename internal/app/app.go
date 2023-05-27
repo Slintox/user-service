@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"github.com/Slintox/user-service/pkg/grpc/interceptor/validate"
+	"github.com/Slintox/user-service/pkg/service/user_v1"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	statikFs "github.com/rakyll/statik/fs"
 	"google.golang.org/grpc/credentials/insecure"
@@ -16,7 +17,6 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/Slintox/user-service/pkg/common/closer"
-	userV1 "github.com/Slintox/user-service/pkg/user_v1"
 	_ "github.com/Slintox/user-service/statik"
 )
 
@@ -107,7 +107,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		))
 	reflection.Register(a.grpcServer)
 
-	userV1.RegisterUserV1Server(a.grpcServer, a.serviceProvider.GetUserImpl(ctx))
+	user_v1.RegisterUserV1Server(a.grpcServer, a.serviceProvider.GetUserImpl(ctx))
 
 	return nil
 }
@@ -119,7 +119,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	err := userV1.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GetConfig().GetGRPCConfig().Port, dialOpts)
+	err := user_v1.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GetConfig().GetGRPCConfig().Port, dialOpts)
 	if err != nil {
 		return err
 	}
@@ -214,7 +214,5 @@ func (a *App) serveSwaggerFile(path string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		return
 	}
 }

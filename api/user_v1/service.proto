@@ -67,9 +67,22 @@ enum UserRoleID {
 
 message User {
   // Имя пользователя
-  string username = 1 [(validate.rules).string = {min_len: 1, max_len: 32}];
+  string username = 1
+  [
+    (validate.rules).string = {
+      min_len: 1,
+      max_len: 32
+    }
+  ];
   // Почта пользователя
-  string email = 2 [(validate.rules).string = {email: true, min_len: 1, max_len: 128}];
+  string email = 2
+  [
+    (validate.rules).string = {
+      email: true,
+      min_len: 1,
+      max_len: 128
+    }
+  ];
   // Удалённое поле "пароль".
   reserved 3;
   // Роль пользователя

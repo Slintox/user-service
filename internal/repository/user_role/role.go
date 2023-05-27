@@ -23,6 +23,7 @@ type Repository interface {
 	Delete(ctx context.Context, roleID int) error
 
 	// IsRoleExist проверяет, существует ли роль пользователя по её идентификатору.
+	// Возвращает ошибку, при неуспешном выполнении запроса.
 	IsRoleExist(ctx context.Context, roleID int) (bool, error)
 }
 
@@ -36,7 +37,7 @@ func NewRepository(client postgres.Client) Repository {
 	}
 }
 
-// Add adds a new user.
+// Add добавляет новую роль пользователя.
 func (r *repository) Add(ctx context.Context, roleName string) error {
 	builder := sq.Insert(tableName).
 		Columns("name").
@@ -61,7 +62,7 @@ func (r *repository) Add(ctx context.Context, roleName string) error {
 	return nil
 }
 
-// Get gets a user.
+// Get возвращает роль пользователя по её идентификатору.
 func (r *repository) Get(ctx context.Context, roleID int) (*model.UserRole, error) {
 	builder := sq.Select("id", "name").
 		From(tableName).
@@ -88,7 +89,7 @@ func (r *repository) Get(ctx context.Context, roleID int) (*model.UserRole, erro
 	return nil, err
 }
 
-// Delete deletes a user.
+// Delete удаляет роль пользователя по её идентификатору.
 func (r *repository) Delete(ctx context.Context, roleID int) error {
 	builder := sq.Delete(tableName).
 		Where(sq.Eq{"id": roleID}).
@@ -112,7 +113,8 @@ func (r *repository) Delete(ctx context.Context, roleID int) error {
 	return nil
 }
 
-// IsRoleExist checks if a role exists.
+// IsRoleExist проверяет, существует ли роль пользователя по её идентификатору.
+// Возвращает ошибку, при неуспешном выполнении запроса.
 func (r *repository) IsRoleExist(ctx context.Context, roleID int) (bool, error) {
 	builder := sq.Select("id").
 		From(tableName).
