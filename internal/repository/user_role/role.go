@@ -67,6 +67,7 @@ func (r *repository) Get(ctx context.Context, roleID int) (*model.UserRole, erro
 	builder := sq.Select("id", "name").
 		From(tableName).
 		Where(sq.Eq{"id": roleID}).
+		Limit(1).
 		PlaceholderFormat(sq.Dollar)
 
 	query, v, err := builder.ToSql()
@@ -119,6 +120,7 @@ func (r *repository) IsRoleExist(ctx context.Context, roleID int) (bool, error) 
 	builder := sq.Select("id").
 		From(tableName).
 		Where(sq.Eq{"id": roleID}).
+		Limit(1).
 		PlaceholderFormat(sq.Dollar)
 
 	query, v, err := builder.ToSql()
