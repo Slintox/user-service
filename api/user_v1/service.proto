@@ -4,24 +4,60 @@ package user_v1;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/Slintox/user-service/pkg/user_v1;user_v1";
 
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "User API"
+    version: "1.0.0"
+  }
+  host: "localhost:8080"
+  base_path: "/v1"
+  schemes: [HTTP, HTTPS]
+  consumes: ["application/json"]
+  produces: ["application/json"]
+};
+
 service UserV1 {
   // Создаёт нового пользователя
-  rpc Create(CreateRequest) returns (google.protobuf.Empty);
+  rpc Create(CreateRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/users/create"
+      body: "*"
+    };
+  }
+
   // Возвращает существующего пользователя
-  rpc Get(GetRequest) returns (GetResponse);
+  rpc Get(GetRequest) returns (GetResponse) {
+    option (google.api.http) = {
+      get: "/users/{username}"
+    };
+  }
+
   // Обновляет указанные поля пользователя
-  rpc Update(UpdateRequest) returns (google.protobuf.Empty);
+  rpc Update(UpdateRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/users/{username}"
+      body: "*"
+    };
+  }
+
   // Удаляет указанного пользователя
-  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/users/{username}"
+    };
+  }
 }
 
 // Models
 
 // Роли пользователя
-enum UserRole {
+enum UserRoleID {
   UNDEFINED = 0;
   // Обычный пользователь
   USER = 1;
@@ -31,48 +67,106 @@ enum UserRole {
 
 message User {
   // Имя пользователя
-  string username = 1;
+  string username = 1
+  [
+    (validate.rules).string = {
+      min_len: 1,
+      max_len: 32
+    }
+  ];
   // Почта пользователя
-  string email = 2;
+  string email = 2
+  [
+    (validate.rules).string = {
+      email: true,
+      min_len: 1,
+      max_len: 128
+    }
+  ];
   // Удалённое поле "пароль".
   reserved 3;
   // Роль пользователя
-  UserRole role = 4;
+  UserRoleID role_id = 4
+  [
+    (validate.rules).enum = {
+      defined_only: true,
+    }
+  ];
   // Время создания пользователя
-  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp created_at = 5
+  [
+    (validate.rules).timestamp = {
+      lt_now: true,
+    }
+  ];
   // Время последнего обновления пользователя
-  google.protobuf.Timestamp updated_at = 6;
+  google.protobuf.Timestamp updated_at = 6
+  [
+    (validate.rules).timestamp = {
+      lt_now: true,
+    }
+  ];
 }
 
 message UpdateUserFields {
   // Новое имя пользователя
-  optional string username = 1;
+  optional string username = 1
+  [
+    (validate.rules).string = {
+      min_len: 1,
+      max_len: 32
+    }
+  ];
   // Новая почта пользователя
-  optional string email = 2;
+  optional string email = 2
+  [
+    (validate.rules).string = {
+      email: true,
+      min_len: 1,
+      max_len: 128
+    }
+  ];
   // Новый пароль
-  optional string password = 3;
+  optional string password = 3
+  [
+    (validate.rules).string = {
+      min_len: 1,
+      max_len: 128
+    }
+  ];
   // Новая роль пользователя
-  optional UserRole role = 4;
+  optional UserRoleID role = 4
+  [
+    (validate.rules).enum = {
+      defined_only: true,
+    }
+  ];
 }
 
 // Responses \ Requests
 
 message CreateRequest {
   // Имя пользователя
-  string username = 1;
+  string username = 1 [(validate.rules).string = {min_len: 1, max_len: 32}];
   // Почта пользователя
-  string email = 2;
+  string email = 2 [(validate.rules).string = {email: true, min_len: 1, max_len: 128}];
   // Пароль пользователя
-  string password = 3;
+  string password = 3
+  [
+    (validate.rules).string = {
+      min_len: 1,
+      max_len: 128
+    }
+  ];
   // Подтверждение пароля пользователя
   string confirm_password = 4;
   // Установка роли пользователя
-  UserRole role = 5;
+  UserRoleID role_id = 5;
 }
 
 message GetRequest {
   // Имя пользователя (уникальное значение, pk)
-  string username = 1;
+  string username = 1 [(validate.rules).string = {min_len: 1, max_len: 32}];
 }
 
 message GetResponse {
@@ -82,12 +176,12 @@ message GetResponse {
 
 message UpdateRequest {
   // Имя пользователя (уникальное значение, pk)
-  string username = 1;
+  string username = 1 [(validate.rules).string = {min_len: 1, max_len: 32}];
   // Поля для обновления
   UpdateUserFields update_data = 2;
 }
 
 message DeleteRequest {
   // Имя пользователя (уникальное значение, pk)
-  string username = 1;
+  string username = 1 [(validate.rules).string = {min_len: 1, max_len: 32}];
 }

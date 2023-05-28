@@ -1,36 +1,36 @@
 package user
 
 import (
+	userV1 "github.com/Slintox/user-service/pkg/service/user_v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/Slintox/user-service/internal/model"
-	desc "github.com/Slintox/user-service/pkg/user_v1"
 )
 
 // FromUserDesc converts model.User -> grpc.User
-func FromUserDesc(user *model.User) *desc.User {
-	return &desc.User{
+func FromUserDesc(user *model.User) *userV1.User {
+	return &userV1.User{
 		Username:  user.Username,
 		Email:     user.Email,
-		Role:      desc.UserRole(user.Role),
+		RoleId:    userV1.UserRoleID(user.RoleID),
 		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: timestamppb.New(user.UpdatedAt),
 	}
 }
 
 // ToCreateUserDesc converts grpc.CreateRequest -> model.User
-func ToCreateUserDesc(user *desc.CreateRequest) *model.CreateUser {
+func ToCreateUserDesc(user *userV1.CreateRequest) *model.CreateUser {
 	return &model.CreateUser{
 		Username:        user.GetUsername(),
 		Email:           user.GetEmail(),
 		Password:        user.GetPassword(),
 		ConfirmPassword: user.GetConfirmPassword(),
-		Role:            model.UserRole(user.GetRole()),
+		RoleID:          int(user.GetRoleId()),
 	}
 }
 
 // ToUpdateUserDesc converts grpc.UpdateUser -> model.UpdateUser
-func ToUpdateUserDesc(updateUserFields *desc.UpdateUserFields) *model.UpdateUser {
+func ToUpdateUserDesc(updateUserFields *userV1.UpdateUserFields) *model.UpdateUser {
 	updUser := &model.UpdateUser{
 		Username: updateUserFields.Username,
 		Email:    updateUserFields.Email,
@@ -38,8 +38,8 @@ func ToUpdateUserDesc(updateUserFields *desc.UpdateUserFields) *model.UpdateUser
 	}
 
 	if updateUserFields.Role != nil {
-		updUser.Role = new(model.UserRole)
-		*updUser.Role = model.UserRole(*updateUserFields.Role)
+		updUser.RoleID = new(int)
+		*updUser.RoleID = int(*updateUserFields.Role)
 	}
 
 	return updUser
